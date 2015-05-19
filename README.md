@@ -17,30 +17,37 @@ save: {reggedat:.z.P;
 	div[`banner;"Welcome, you are user #",(string count users),"!"]
 }
 div (`banner;"Please login")
-itext (`name; (`blur`placeholder)!(save;"Enter your username")
+itext (`name; (`blur`placeholder)!(save;"Enter your username"))
 .qqq.boot[]
 ```
-
 
 It outputs:
 
 ```html
-
+<header-stuff/>
 <script src="qqq.js"></script>
-
 <input type="text" name="name" id="qqq-name" 
 	placeholder="Enter your username">
 <script>
 qqq.bind('name')
 </script>
-
-<otherstuff/>
-
+<other-content/>
 <script>
 // and later:
 qqq.boot()
 </script>
 ```
+
+Need to figure out
+------------------
+
+How do we namespace "components" so I can compose pieces of the page into
+a single unit, as a kind of programmatic "atomic design"?
+
+TODO
+----
+
+Everything
 
 Flexible calling syntax
 -----------------------
