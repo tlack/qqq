@@ -66,12 +66,14 @@ tag:{[args]
 	dshow(`tagargs;args);
 	if[10h=abs type args;:args];                             / string? pass thru
 	if[not 0h=type args;`badtag];                            / arg must be a mixed list
+
 	/ examine each arg one at a time. this is awful and very un-q-like
-	a:first args; ta:type a;
+	a:first args; ta:type a;                                 / very first item in list
 	dshow(`sa;a);
 	if[0h=abs ta; :""vs .z.s each args];                     / list of lists = array of content, recurse
 	tag:$[-11h=type first args;[args:1 _ args;a];`span];     / symbol first = tag name; default to span
-	a:first args; ta:type a;
+
+	a:first args; ta:type a;                                 / second item; dictionary or content
 	dshow(`aa;a);
 	attrs:$[99h=ta;[args:1 _ args;a];()!()];                  / dictionary = attrs
 	contents:$[0h=type args; ""sv .z.s each args; args];      / everything else is child content; recurse on general list
@@ -102,9 +104,9 @@ attrstr:{:" "sv{(str y),"=\"",(str x[y]),"\""}[x;]each key x}
 str:{[v]
 	tv:type v;
 	dshow(`str;v;tv);
-	r:$[99h=tv;attrstr[v];    /dict
-		  98h=tv;'tablenyi;       
-			0h=tv;.z.s each v;   /recurse on vectors
+	r:$[99h=tv;attrstr[v];                                   / dict=>attrs
+		  98h=tv;'tablenyi;                                    / need good data tables - module?
+			0h=tv;.z.s each v;                                   / recurse on general list
 		  string v];
 	raze r}
 
@@ -119,5 +121,6 @@ TODO
 	active attrs - 
 		tag["a";(enlist `onclick)!enlist {[req] domupd[`message;"Clicked"]
 
+vim: set noet ci pi sts=0 sw=2 ts=2
 \
 
