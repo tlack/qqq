@@ -7,7 +7,7 @@ active attrs -
 \d .qqq
 \c 50 2000
 
-debug:1;
+debug:0;
 
 / Handy accessors. Our canonical example URL is:
 / https://example.com:8080/name.thing?name=Tom&age=36#id Different parts of the
@@ -40,14 +40,14 @@ globalize:{
 install:{[handlers]
 	func:{[req;handlers] 
 		.[parsereq;req];
-		show(`installf;req;handlers);raze handlers @\: req};
+		dshow(`installf;req;handlers);raze handlers @\: req};
 	.z.ph:func[;handlers]}
 router:{
 	routes:x;
 	{[routes;req]
-		show(`routerf;routes;req;pg);
+		dshow(`routerf;routes;req;pg);
 		matches:routes pg;
-		show(`matches;matches);
+		dshow(`matches;matches);
 		/ call handlers, collect output, str the whole thing
 		/ sadly doesnt yet support returning null to terminate
 		raze str each matches @\: req}[routes]}
@@ -72,35 +72,34 @@ parsereq:{
 / convert crazy mixed list of content into an html string
 / guaranteed to return a string!(tm)
 tag:{[args]
-	show(`tagargs;args);
+	dshow(`tagargs;args);
 	if[10h=abs type args;:args];                             / string? pass thru
 	if[not 0h=type args;`badtag];                            / arg must be a mixed list
 	/ examine each arg one at a time. this is awful and very un-q-like
 	a:first args; ta:type a;
-	show(`sa;a);
+	dshow(`sa;a);
 	if[0h=abs ta; :""vs .z.s each args];                     / list of lists = array of content, recurse
 	tag:$[-11h=type first args;[args:1 _ args;a];`span];     / symbol first = tag name; default to span
 	a:first args; ta:type a;
-	show(`aa;a);
+	dshow(`aa;a);
 	attrs:$[99h=ta;[args:1 _ args;a];()!()];                  / dictionary = attrs
 	contents:$[0h=type args; ""sv .z.s each args; args];      / everything else is child content; recurse on general list
-	show(`ca;contents);
+	dshow(`ca;contents);
 	raze tag0[tag;attrs;contents]}
 
 tag0:{[tag;attrs;contents]
 	/ TODO: decode active attrs like `onclick
-	show(`tag0;tag;attrs;type attrs;contents);
+	dshow(`tag0;tag;attrs;type attrs;contents);
 	curtag::tag;
 	space:$[count key attrs and 99h=type attrs;" ";""];
-	show(`tag0space;space);
-	show(`tag0contents;contents);
+	dshow(`tag0space;space);
+	dshow(`tag0contents;contents);
 	thing:("<";maprealtag[tag];space;attrs;">";contents;"</";maprealtag[tag];">");
-	show(`tag0thing;thing);
+	dshow(`tag0thing;thing);
 	str each thing}
 
 maprealtag:{[tag]
-	$[`divv=tag;`div;
-		tag]}
+	$[`divv=tag;`div;tag]}
 
 / Return the beginnings of a shortcut tag
 stag:{[t;args]
@@ -110,15 +109,14 @@ stag:{[t;args]
 attrstr:{:" "sv{(str y),"=\"",(str x[y]),"\""}[x;]each key x}
 str:{[v]
 	tv:type v;
-	show(`str;v;tv);
+	dshow(`str;v;tv);
 	r:$[99h=tv;attrstr[v];    /dict
 		  98h=tv;'tablenyi;       
 			0h=tv;.z.s each v;   /recurse on vectors
 		  string v];
 	raze r}
 
-dshow:{
-	if[debug;0N!x]}
+dshow:{if[debug;0N!x]}
 
 \d .
 
