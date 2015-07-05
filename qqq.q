@@ -5,11 +5,14 @@ active attrs -
 \
 
 \d .qqq
-\c 2000 2000
+\c 50 2000
+
+debug:1;
 
 / Handy accessors. Our canonical example URL is:
 / https://example.com:8080/name.thing?name=Tom&age=36#id Different parts of the
 / code will refer to this.
+/ SO FAR 'NYI
 / `name
 pg:"";
 / `thing
@@ -26,6 +29,9 @@ curtag:"";
 
 / HIGH LEVEL
 
+globalize:{
+	tags:`a`body`divv`h1`h2`h3`h4`h5`h6`head`html`link`title;
+	{(`$string x) set stag[x;]}each tags}
 / take over for .z.ph
 / pass in an array of handler functions. 
 / func:{[url; params; requestdata] "<div>Hello ",params`name,"</div>"}
@@ -36,11 +42,8 @@ install:{[handlers]
 		.[parsereq;req];
 		show(`installf;req;handlers);raze handlers @\: req};
 	.z.ph:func[;handlers]}
-
 router:{
 	routes:x;
-
-	/ simulate scope with currying; awful
 	{[routes;req]
 		show(`routerf;routes;req;pg);
 		matches:routes pg;
@@ -52,19 +55,12 @@ router:{
 / LOW LEVEL
 
 parsereq:{
+	'nyi;
 	p:"?"vs x;
 	pg::`$p[0];
 	params::if [0~type v:"="vs x;v;()]
 	headers::y}
-
 / create an html representation of a tag
-tag:{[tag;attrs;contents]
-	/ TODO: decode active attrs like `onclick
-	curtag::tag;
-	$[not(tag~null);
-			str each ("<";tag;" ";attrs;">";contents;"</";tag;">");
-			contents]}
-
 / Arg list converted to strings
 / tag"<a>content</a>"
 / tag("a";"content")
@@ -72,48 +68,57 @@ tag:{[tag;attrs;contents]
 / tag(`a;"href='https://example.com'";"content")
 / tag(`a;(enlist`href)!enlist"https://example.com";content1[],content2)
 / tag(`a;{func};(enlist`id)!enlist"mainpage";content1[],content2)
-/ tag:{}(
 
-attrstr:{
-	show(`dictstr;x);
-	j:{{x,z,"\"",y,"\""}[;;x]};
-	eq:j["="]; 
-	/ runplugins:{x};
-	/ postplugins:runplugins[x];
-	postplugins:x;
-	left:str each key postplugins;
-	right:str each value postplugins;
-	show(`pp;postplugins);
-	" " sv left eq' right}
+/ convert crazy mixed list of content into an html string
+/ guaranteed to return a string!(tm)
+tag:{[args]
+	show(`tagargs;args);
+	if[10h=abs type args;:args];                             / string? pass thru
+	if[not 0h=type args;`badtag];                            / arg must be a mixed list
+	/ examine each arg one at a time. this is awful and very un-q-like
+	a:first args; ta:type a;
+	show(`sa;a);
+	if[0h=abs ta; :""vs .z.s each args];                     / list of lists = array of content, recurse
+	tag:$[-11h=type first args;[args:1 _ args;a];`span];     / symbol first = tag name; default to span
+	a:first args; ta:type a;
+	show(`aa;a);
+	attrs:$[99h=ta;[args:1 _ args;a];()!()];                  / dictionary = attrs
+	contents:$[0h=type args; ""sv .z.s each args; args];      / everything else is child content; recurse on general list
+	show(`ca;contents);
+	raze tag0[tag;attrs;contents]}
 
+tag0:{[tag;attrs;contents]
+	/ TODO: decode active attrs like `onclick
+	show(`tag0;tag;attrs;type attrs;contents);
+	curtag::tag;
+	space:$[count key attrs and 99h=type attrs;" ";""];
+	show(`tag0space;space);
+	show(`tag0contents;contents);
+	thing:("<";maprealtag[tag];space;attrs;">";contents;"</";maprealtag[tag];">");
+	show(`tag0thing;thing);
+	str each thing}
+
+maprealtag:{[tag]
+	$[`divv=tag;`div;
+		tag]}
+
+/ Return the beginnings of a shortcut tag
+stag:{[t;args]
+	:{tag[(x;y)]}[t;args]}
+
+/ The following functions basically convert Q data types to HTML
+attrstr:{:" "sv{(str y),"=\"",(str x[y]),"\""}[x;]each key x}
 str:{[v]
-	show (`str;type v;v);
-	r:$[99=type v;attrstr[v];    /dict
-		  98=type v;"table";       /tbl
+	tv:type v;
+	show(`str;v;tv);
+	r:$[99h=tv;attrstr[v];    /dict
+		  98h=tv;'tablenyi;       
+			0h=tv;.z.s each v;   /recurse on vectors
 		  string v];
 	raze r}
 
-/ converts a string into a sym if necessary
-sym:{[v]$[10=(abs type v);`$v;v]}
+dshow:{
+	if[debug;0N!x]}
 
-t:{[name;res;expect]
-	res:raze res;
-	show (`teststart;name;res;expect);
-	bool:res~expect;
-	show $[not bool;'testfailed;(string name),": success"]}
-
-test:{
-	t[`str1;str["name"];"name"];
-	t[`strs;str[`name];"name"];
-	t[`strss;str[`name`name];"namename"];
-	t[`strss2;str[(enlist "a")!enlist "1"];"a=\"1\""];
-	t[`strss3;str[(`a`b)!1 2];"a=\"1\" b=\"2\""];
-	t[`strss3;str[(enlist `aaaa)!enlist 1];"aaaa=\"1\""];
-	attrs:(enlist `href)!enlist "test.html";
-	t[`tag1;tag[`a;attrs;"Blah"];"<a href=\"test.html\">Blah</a>"];
-	show `testspassed}
-
-show .z.f;
-/if[.z.f~`qqq.q;test[]]
-test[]
+\d .
 
