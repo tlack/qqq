@@ -51,14 +51,6 @@ parsereq:{
 	pg::`$p[0];
 	params::if [0~type v:"="vs x;v;()]
 	headers::y}
-/ create an html representation of a tag
-/ Arg list converted to strings
-/ tag"<a>content</a>"
-/ tag("a";"content")
-/ tag(`a;"content")
-/ tag(`a;"href='https://example.com'";"content")
-/ tag(`a;(enlist`href)!enlist"https://example.com";content1[],content2)
-/ tag(`a;{func};(enlist`id)!enlist"mainpage";content1[],content2) 'nyi
 
 / convert crazy mixed list of content into an html string
 / guaranteed to return a string!(tm)
