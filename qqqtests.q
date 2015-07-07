@@ -1,10 +1,12 @@
 \l qqq.q
 
+.qqq.debug:1;
+
 t:{[name;res;expect]
 	res:raze res;
 	show (`teststart;name;res;expect);
 	bool:res~expect;
-	show $[not bool;[0N!res;'testfailed];(string name),": success"]}
+	show $[not bool;[0N!res;'testfailed;exit 1];(string name),": success"]}
 
 test:{
 	attr0:(enlist `href)!enlist "test.html";
@@ -26,7 +28,18 @@ test:{
 	t[`tag5;TAG(`a;attr0;"Hello");"<a href=\"test.html\">Hello</a>"];
 	t[`tag6;TAG(attr1;"Hello");"<span a=\"b\">Hello</span>"];
 	t[`tag3;TAG(`a;(`b;"Hello"));"<a><b>Hello</b></a>"];
-	show `testspassed}
+	.qqq.hclass[`track]:{[ta] 
+		.qqq.dshow(`ta1;ta); 
+		ta[1;`onclick]:`$"t()";
+		.qqq.dshow(`ta2;ta);
+		:ta};
+	t[`tag3;TAG(`a;`track;(`b;"Hello"));"<a class=\"track\" onclick=\"t()\"><b>Hello</b></a>"];
+	t[`tag3;TAG(`a;attr1;(`b;attr1;"Hello"));"<a a=\"b\"><b a=\"b\">Hello</b></a>"];
+	t[`tag3;TAG(`a;attr1;(`b;`bolder;"Hello"));"<a a=\"b\"><b class=\"bolder\">Hello</b></a>"];
+	.qqq.htag[`fake]:{[tag].qqq.dshow(`faketag;(tag));tag[0]:`a;tag[1],:(enlist`class)!enlist`fake;tag};
+	t[`tag3;TAG(`a;attr1;(`fake;"Hello"));"<a a=\"b\"><a class=\"fake\">Hello</a></a>"];
+	show `testspassed;
+	exit 0}
 
 test[]
 
