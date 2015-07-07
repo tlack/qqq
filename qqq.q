@@ -21,7 +21,7 @@ curtitle:"";                                               / see htag`title belo
 / its more convenient to write handlers that run *after* the inner content is resolved, so these work via
 / callbacks.
 htag:()!();
-htag[`title]:{[ta]dshow(`htt;(t;ta));curtitle::ta[2];ta}   / save <title> contents to global
+htag[`title]:{[ta]dshow(`htt;(ta));curtitle::ta[2];ta}   / save <title> contents to global
 
 / set handlers for classes here. classes can be specified in tags; they become DOM classNames, but you can
 / also define callbacks that can transform the tag they're in arbitrarily. they're called as 
@@ -115,7 +115,7 @@ maprealtag:{[tag]
 	$[`divv=tag;`div;tag]}
 
 / Return the beginnings of a shortcut tag
-stag:{[t;args]:{dshow(`stag;tag[(x;y)])}[t;args]}                       / create projected function, basically
+stag:{[t;args]:{dshow(`stag;tag(x,y))}[t;args]}                       / create projected function, basically
 
 / Plugin stuff
 applyclass:{[class;tag]
