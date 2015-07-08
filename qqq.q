@@ -27,6 +27,7 @@ htag[`title]:{[ta]dshow(`htt;(ta));curtitle::ta[2];ta}   / save <title> contents
 / also define callbacks that can transform the tag they're in arbitrarily. they're called as 
 / func[class;taginfo] taginfo:("a";(enlist`href)!enlist"test.html";contentslist)
 hclass:()!();
+hclass[`qqq]:{[ta]ta}
 
 globalize:{                                                / TODO define these in .qqq and simply export here
 	tags:`a`body`divv`h1`h2`h3`h4`h5`h6`head`html`link`section`title;
@@ -89,8 +90,9 @@ tag:{[args]
 				  -11h=ta;[args:1 _ args;class:a;(enlist`class)!enlist a]; / sym second arg = classname shortcut. good place for plugins.
 					()!()];
 
+	a:first args;ta:type a;
 	dshow(`contents;args);
-	contents:$[0h=type args; ""sv .z.s each args; args];     / everything else is child content; recurse on general list
+	contents:$[0h=ta;""sv .z.s each args;args];                / everything else is child content; recurse on general list
 	tagargs:dshow(`tagpreplugins;(tag;attrs;contents));
 	if[not null class;tagargs:applyclass[class;tagargs]];
 	tagargs:applytag[tagargs];
