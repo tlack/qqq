@@ -1,7 +1,7 @@
 \d .qqq
 \c 50 2000
 
-debug:1;
+debug:0;
 
 / request data for your use. URL in examples below:
 / https://example.com:8080/pagename.type?name=Tom&age=36#id 
@@ -86,12 +86,14 @@ tag:{[args]
 				$[t~`;t:fa;                                        / first symbol must be tag
 				  cl~`;[cl:fa;at[`class]:fa]];                     / rest can be class
 			 ];
-			 10h=ta;cn,:fa;                                      / string? append to content
+			 10h=abs ta;cn,:fa;                                  / string? append to content
 			  0h=ta;[                                            / complicated handling of general list
 					/ dshow(`genlist;(fa;args));
 					if[count fa;[
-						if[-11h=type fa[0];cn,:raze .z.s@fa];
-						if[  0h=type fa[0];cn,:raze .z.s each fa]]];
+						taa:type fa[0];
+						if[-11h=taa;cn,:raze .z.s@fa];
+						if[ 10h=taa;cn,:raze .z.s each fa];            / 
+						if[  0h=taa;cn,:raze .z.s each fa]]];
 			 ];
 			 dshow(`unknown;fa)
 			];
@@ -103,7 +105,7 @@ tag:{[args]
 	if[not cl~`;arg0:applyclass[cl;arg0]];
 	arg0:applytag[arg0];
 	dshow(`pretag0;arg0);
-	:tag0 . arg0}
+	:raze tag0 . arg0}
 
 / LOW LEVEL IMPLEMENTATION
 
@@ -112,7 +114,6 @@ tag0:{[tag;attrs;contents]
 	dshow(`tag0;(tag;attrs;type attrs;contents));
 	curtag::tag;
 	space:$[(count key attrs) and 99h=type attrs;" ";""];      / simpler way to detect empty dict? ^/fill?
-	dshow(`tag0space;space);
 	dshow(`tag0contents;contents);
 	thing:("<";maprealtag[tag];space;attrs;">";contents;"</";maprealtag[tag];">");
 	dshow(`tag0thing;thing);
@@ -147,6 +148,7 @@ mktags:{{(`$".qqq.",string x) set stag[x;]}each taglist}
 
 / The following functions basically convert Q data types to HTML
 
+/ dict to 'a="1" b="2"'
 attrstr:{:" "sv{(str y),"=\"",(str x[y]),"\""}[x;]each key x}
 str:{[v]
 	tv:type v;

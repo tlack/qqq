@@ -51,8 +51,11 @@ test:{
 
 	/ empty content
 	t[`tagG;TAG(`a;attr1);"<a a=\"b\"></a>"];
-	show `testspassed;
-	exit 0}
+
+	t[`stag1;.qqq.head("Hello");"<head>Hello</head>"];
+	t[`stag2;.qqq.head(.qqq.title("Hello"));"<head><title>Hello</title></head>"];
+	t[`stag3;.qqq.head(.qqq.title("A");.qqq.title("B"));"<head><title>A</title><title>B</title></head>"];
+	show `testspassed}
 
 test[]
 
