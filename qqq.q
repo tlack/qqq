@@ -10,22 +10,23 @@ pg:"";                                                     / `pagename
 ext:"";                                                    / `type
 params:()!();                                              / (`name`age)!("Tom";"36")
 headers:()!();                                             / HTTP request parameters ala .z.ph x[1]
+curtag:"";                                                 / tag currently being rendered (for callbacks from tag[])
 sessid:"";                                                 / session guid - module?
 history:();                                                / session history - module?
 clientstate:()!();                                         / js state coupling - module?
-curtag:"";                                                 / tag currently being rendered (for callbacks)
 
 / HIGH LEVEL
 
 globalize:{
-	tags:`a`body`divv`h1`h2`h3`h4`h5`h6`head`html`link`title;
-	{(`$string x) set stag[x;]}each tags}
+	d:string system"d";
+	{(`$y,".",string x) set get (`$".qqq.",string x)}[;d] each taglist}
 
 / take over for .z.ph
 / pass in an array of handler functions. 
 / func:{[url; params; requestdata] "<div>Hello ",params`name,"</div>"}
 / return a null to terminate processing 'nyi
 / otherwise results will be catenated and returned 
+/ you can override .z.ph yourself if you don't want to use this
 install:{[handlers]
 	func:{[req;handlers] 
 		.[parsereq;req];
@@ -45,12 +46,16 @@ router:{
 
 / LOW LEVEL
 
+/ populate globals with .z.ph-style (`url;headers) list
 parsereq:{
-	'nyi;
-	p:"?"vs x;
-	pg::`$p[0];
-	params::if [0~type v:"="vs x;v;()]
-	headers::y}
+	dshow(`pri;x);
+	p:"?"vs x[0];
+	p0:"."vs p[0];
+	pg::`$p0[0];
+	ext::`$p0[1];
+	params::if[0~type v:"&"vs p[1];"="vs v;()];
+	headers::x[1];
+	dshow(`prr;(pg;ext;params;headers))}
 
 / convert crazy mixed list of content into an html string
 / guaranteed to return a string!(tm)
@@ -90,6 +95,9 @@ maprealtag:{[tag]
 / Return the beginnings of a shortcut tag
 stag:{[t;args]
 	:{tag[(x;y)]}[t;args]}
+
+taglist:`a`body`divv`h1`h2`h3`h4`h5`h6`head`html`link`nav`title;
+mktags:{{(`$string x) set stag[x;]}each taglist}
 
 / The following functions basically convert Q data types to HTML
 attrstr:{:" "sv{(str y),"=\"",(str x[y]),"\""}[x;]each key x}

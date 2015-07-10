@@ -22,10 +22,13 @@ test:{
 	t[`tag1;TAG0[`a;attr0;"Blah"];"<a href=\"test.html\">Blah</a>"];
 	t[`tag2;TAG"Hello";"Hello"];
 	t[`tag3;TAG(`a;"Hello");"<a>Hello</a>"];
+	t[`tag3b;TAG(`a;"");"<a></a>"];
+	t[`tag3c;TAG(`a;());"<a></a>"];
 	t[`tag4;TAG(`a;attr0;"Hello");"<a href=\"test.html\">Hello</a>"];
 	t[`tag5;TAG(`a;attr0;"Hello");"<a href=\"test.html\">Hello</a>"];
 	t[`tag6;TAG(attr1;"Hello");"<span a=\"b\">Hello</span>"];
-	t[`tag3;TAG(`a;(`b;"Hello"));"<a><b>Hello</b></a>"];
+	t[`tag7;TAG(`a;(`b;"Hello"));"<a><b>Hello</b></a>"];
+	t[`tag8;TAG(`a;(`b;`c;"Hello"));"<a><b class=\"c\">Hello</b></a>"];
 	show `testspassed}
 
 test[]
