@@ -20,18 +20,17 @@ clientstate:()!();                                         / js state coupling -
 
 globalize:{
 	d:string system"d";
-	{(`$y,".",string x) set get (`$".qqq.",string x)}[;d] each taglist}
+	{0N!(x;y);(`$y,".",string x) set get (`$".qqq.",string x)}[;d] each taglist}
 
-/ HIGH LEVEL
-
-/ its more convenient to write handlers that run *after* the inner content is resolved, so these work via
-/ callbacks.
+/ its more convenient to write handlers that run *after* the inner content is
+/ resolved, so these work via callbacks.
 htag:()!();
 htag[`title]:{[ta]dshow(`htt;(ta));curtitle::ta[2];ta}   / save <title> contents to global
 
-/ set handlers for classes here. classes can be specified in tags; they become DOM classNames, but you can
-/ also define callbacks that can transform the tag they're in arbitrarily. they're called as 
-/ func[class;taginfo] taginfo:("a";(enlist`href)!enlist"test.html";contentslist)
+/ set handlers for classes here. classes can be specified in tags; they become
+/ DOM classNames, but you can also define callbacks that can transform the tag
+/ they're in arbitrarily. they're called as func[class;taginfo]
+/ taginfo:("a";(enlist`href)!enlist"test.html";contentslist)
 hclass:()!();
 hclass[`qqq]:{[ta]ta}
 
@@ -58,9 +57,9 @@ router:{
 		/ sadly doesnt yet support returning null to terminate
 		raze str each matches @\: req}[routes]}
 
-/ LOW LEVEL
+/ MID-LEVEL HELPER FUNCTIONS
 
-/ populate globals with .z.ph-style (`url;headers) list
+/ populate globals from .z.ph-style (`url;headers) list
 parsereq:{
 	dshow(`pri;x);
 	p:"?"vs x[0];
@@ -74,31 +73,39 @@ parsereq:{
 / convert crazy mixed list of content into an html string
 / guaranteed to return a string!(tm)
 tag:{[args]
-	dshow(`tagargs;args);
-	class:`;                                                 / class to apply
-	if[10h=abs type args;:args];                             / string? pass thru
-	if[not 0h=type args;`badtag];                            / arg must be a mixed list
+	/ta:type args;
+	/dshow(`tagentry;(args;ta));
+	if[10h=type args;:args];
+	t:`; cl:`; at:()!(); cn:();                              / tag, class, attributes, content
 
-	/ examine each arg one at a time. this is awful and very un-q-like
-	a:first args; ta:type a; dshow(`arg1;a);                 / processing very first item in list
-	if[0h=abs ta; :""vs .z.s each args];                     / list of lists = array of content, recurse
-	tag:$[-11h=ta;[args:1 _ args;a];`span];                  / symbol first = tag name; default to span
+	while [(count args)>0;
+		fa:first args; ta:type fa; args: 1 _ args;
+		dshow(`preif;(fa;ta;args));
+		$[ 99h=ta;at:fa;                                       / dict=html attributes
+			-11h=ta;[                                            / symbol
+				$[t~`;t:fa;                                        / first symbol must be tag
+				  cl~`;[cl:fa;at[`class]:fa]];                     / rest can be class
+			 ];
+			 10h=ta;cn,:fa;                                      / string? append to content
+			  0h=ta;[                                            / complicated handling of general list
+					/ dshow(`genlist;(fa;args));
+					if[count fa;[
+						if[-11h=type fa[0];cn,:raze .z.s@fa];
+						if[  0h=type fa[0];cn,:raze .z.s each fa]]];
+			 ];
+			 dshow(`unknown;fa)
+			];
+		dshow(`postif;(t;cl;at;cn;args));
+	];
+	/dshow(`hello;(t;at;cn));
+	if[t~`;t:`span];                                         / default tag=span	
+	arg0:(t;at;cn);
+	if[not cl~`;arg0:applyclass[cl;arg0]];
+	arg0:applytag[arg0];
+	dshow(`pretag0;arg0);
+	:tag0 . arg0}
 
-	a:first args; ta:type a; dshow(`arg2;a);                 / processing second item; tag attrs (dict), symbol=`id!sym or content
-	attrs:$[99h=ta;[args:1 _ args;a];                        / dictionary = attrs
-				  -11h=ta;[args:1 _ args;class:a;(enlist`class)!enlist a]; / sym second arg = classname shortcut. good place for plugins.
-					()!()];
-
-	a:first args;ta:type a;
-	dshow(`contents;args);
-	contents:$[0h=ta;""sv .z.s each args;args];                / everything else is child content; recurse on general list
-	tagargs:dshow(`tagpreplugins;(tag;attrs;contents));
-	if[not null class;tagargs:applyclass[class;tagargs]];
-	tagargs:applytag[tagargs];
-	dshow(`tag0finalargs;tagargs);
-	dshow(`tag0fn;tag0);
-	xx:raze tag0 . tagargs;
-	dshow(`tag0done;xx)}
+/ LOW LEVEL IMPLEMENTATION
 
 tag0:{[tag;attrs;contents]
 	/ TODO: decode active attrs like `onclick
@@ -116,7 +123,7 @@ maprealtag:{[tag]
 	$[`divv=tag;`div;tag]}
 
 / Return the beginnings of a shortcut tag
-stag:{[t;args]:{dshow(`stag;tag(x,y))}[t;args]}                       / create projected function, basically
+stag:{[t;args]:{dshow(`stag;tag(x;y))}[t;args]}                       / create projected function, basically
 
 / Plugin stuff
 applyclass:{[class;tag]
@@ -135,15 +142,15 @@ applytag:{[tag]
 	dshow(`r;r);
 	:r}
 
-taglist:`a`body`divv`h1`h2`h3`h4`h5`h6`head`html`link`nav`title;
-mktags:{{(`$string x) set stag[x;]}each taglist}
+taglist:`a`body`divv`h1`h2`h3`h4`h5`h6`head`html`link`nav`script`title;
+mktags:{{(`$".qqq.",string x) set stag[x;]}each taglist}
 
 / The following functions basically convert Q data types to HTML
 
 attrstr:{:" "sv{(str y),"=\"",(str x[y]),"\""}[x;]each key x}
 str:{[v]
 	tv:type v;
-	dshow(`str;v;tv);
+	/dshow(`str;v;tv);
 	r:$[99h=tv;attrstr[v];                                   / dict=>attrs
 		  98h=tv;'tablenyi;                                    / need good data tables - module?
 			0h=tv;.z.s each v;                                   / recurse on general list
@@ -155,10 +162,13 @@ dshow:{
 	v:x[1];
 	if[not debug;:v]
 	tv:type v;
-	0N!raze "DEBUG: ",(string x[0])," type = ",string tv;
-	if[0>tv;0N!type each v];
+	0N!raze "DEBUG: ",(string x[0])," type = ",(string tv),$[(98<tv) and 0>tv;" (",(string type each v),")";""];
 	0N!v;
 	v}
+
+/ STARTUP
+
+mktags[]
 
 \d .
 
