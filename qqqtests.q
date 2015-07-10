@@ -35,6 +35,7 @@ test:{
 		:ta};
 	t[`tag3;TAG(`a;`track;(`b;"Hello"));"<a class=\"track\" onclick=\"t()\"><b>Hello</b></a>"];
 	t[`tag3;TAG(`a;attr1;(`b;attr1;"Hello"));"<a a=\"b\"><b a=\"b\">Hello</b></a>"];
+	t[`tag3;TAG(`a;attr1;((`b;attr1;"Hello");(`c;"Goodbye")));"<a a=\"b\"><b a=\"b\">Hello</b><c>Goodbye</c></a>"];
 	t[`tag3;TAG(`a;attr1;(`b;`bolder;"Hello"));"<a a=\"b\"><b class=\"bolder\">Hello</b></a>"];
 	.qqq.htag[`fake]:{[tag].qqq.dshow(`faketag;(tag));tag[0]:`a;tag[1],:(enlist`class)!enlist`fake;tag};
 	t[`tag3;TAG(`a;attr1;(`fake;"Hello"));"<a a=\"b\"><a class=\"fake\">Hello</a></a>"];
