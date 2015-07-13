@@ -4,20 +4,25 @@
 debug:0;
 
 / request data for your use. URL in examples below:
-/ https://example.com:8080/pagename.type?name=Tom&age=36#id 
-/ SO FAR 'NYI
-pg:"";                                                     / `pagename
-ext:"";                                                    / `type
-params:()!();                                              / (`name`age)!("Tom";"36")
+/ https://example.com:8080/dir/dir2/pagename.type?name=Tom&age=36#id 
+host:"";
+url:"";                                                    / "/dir/dir2/pagename.type?name=Tom&age=36"
+page:`;                                                    / `pagename - last part of url
+dir:`;                                                     / `dir/dir2 - everything before page (sym atom)
+path:`;                                                    / `dir/pagename - full url (sym atom)
+ext:`;                                                     / `type
+query:()!();                                               / (`name`age)!("Tom";"36")
 headers:()!();                                             / HTTP request parameters ala .z.ph x[1]
 curtag:"";                                                 / tag currently being rendered (for callbacks from tag[])
 curtitle:"";                                               / see htag`title below
+/ 'nyi:
 sessid:"";                                                 / session guid - module?
 history:();                                                / session history - module?
 clientstate:()!();                                         / js state coupling - module?
 
 / HIGH LEVEL
 
+/ import tag functions into current namespace (where func was called in)
 globalize:{
 	d:string system"d";
 	{0N!(x;y);(`$y,".",string x) set get (`$".qqq.",string x)}[;d] each taglist}
@@ -26,6 +31,7 @@ globalize:{
 / resolved, so these work via callbacks.
 htag:()!();
 htag[`title]:{[ta]dshow(`htt;(ta));curtitle::ta[2];ta}   / save <title> contents to global
+htag[`input]:{[ta]dshow(`hti;(ta));a:string@'ta[1];a[`value]:-1 # ta;ta[1]:a;ta[2]:"";ta}   / save <title> contents to global
 
 / set handlers for classes here. classes can be specified in tags; they become
 / DOM classNames, but you can also define callbacks that can transform the tag
@@ -62,13 +68,18 @@ router:{
 / populate globals from .z.ph-style (`url;headers) list
 parsereq:{
 	dshow(`pri;x);
+	url:x[0];
 	p:"?"vs x[0];
 	p0:"."vs p[0];
-	pg::`$p0[0];
+	path::`$p0[0];
+	ppargs:"/"vs p0[0];
+	dir:`$"/"sv -1 _ ppargs;
+	page:`$-1#ppargs;
 	ext::`$p0[1];
-	params::if[0~type v:"&"vs p[1];"="vs v;()];
+	query::if[0~type v:"&"vs p[1];"="vs v;()];
 	headers::x[1];
-	dshow(`prr;(pg;ext;params;headers))}
+	host::x[1]`Host;
+	dshow(`prr;(path;dir;page;ext;query;headers;host))}
 
 / convert crazy mixed list of content into an html string
 / guaranteed to return a string!(tm)
@@ -80,7 +91,10 @@ tag:{[args]
 
 	while [(count args)>0;
 		fa:first args; ta:type fa; args: 1 _ args;
-		dshow(`preif;(fa;ta;args));
+		/dshow(`preif;(fa;ta;args));
+		dshow(`pfa;fa);
+		dshow(`pta;ta);
+		dshow(`ptargs;args);
 		$[ 99h=ta;at:fa;                                       / dict=html attributes
 			-11h=ta;[                                            / symbol
 				$[t~`;t:fa;                                        / first symbol must be tag
@@ -91,6 +105,7 @@ tag:{[args]
 					/ dshow(`genlist;(fa;args));
 					if[count fa;[
 						taa:type fa[0];
+						dshow(`genlisttaa;taa;fa);
 						if[-11h=taa;cn,:raze .z.s@fa];
 						if[ 10h=taa;cn,:raze .z.s each fa];            / 
 						if[  0h=taa;cn,:raze .z.s each fa]]];
@@ -124,7 +139,12 @@ maprealtag:{[tag]
 	$[`divv=tag;`div;tag]}
 
 / Return the beginnings of a shortcut tag
-stag:{[t;args]:{dshow(`stag;tag(x;y))}[t;args]}                       / create projected function, basically
+stag:{[t;args]:{
+		dshow(`STAGinput;(x;y));
+		args:x,$[0h=type y;y;enlist y];
+		dshow(`STAGargs;args);
+		out:tag @ args;
+		dshow(`STAGoutput;out)}[t;args]}                       / create projected function, basically
 
 / Plugin stuff
 applyclass:{[class;tag]
@@ -135,7 +155,8 @@ applyclass:{[class;tag]
 
 applytag:{[tag]
 	tagName:first tag;
-	dshow(`at;tag);
+	dshow(`at1;tag);
+	dshow(`at2;tagName);
 	dshow(`htag;htag);
 	m:htag@tagName;
 	dshow(`atm;m);
@@ -143,7 +164,7 @@ applytag:{[tag]
 	dshow(`r;r);
 	:r}
 
-taglist:`a`body`divv`h1`h2`h3`h4`h5`h6`head`html`link`nav`script`title;
+taglist:`a`body`divv`form`h1`h2`h3`h4`h5`h6`head`html`input`label`link`nav`script`title;
 mktags:{{(`$".qqq.",string x) set stag[x;]}each taglist}
 
 / The following functions basically convert Q data types to HTML
@@ -178,6 +199,8 @@ mktags[]
 
 TODO
 ----
+	import the rest of the good parts of .h
+
 	active attrs - 
 		tag["a";(enlist `onclick)!enlist {[req] domupd[`message;"Clicked"]};"Click me"]
 

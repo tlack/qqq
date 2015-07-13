@@ -55,6 +55,7 @@ test:{
 	t[`stag1;.qqq.head("Hello");"<head>Hello</head>"];
 	t[`stag2;.qqq.head(.qqq.title("Hello"));"<head><title>Hello</title></head>"];
 	t[`stag3;.qqq.head(.qqq.title("A");.qqq.title("B"));"<head><title>A</title><title>B</title></head>"];
+	t[`stag4;.qqq.form(`method`action!(`post;"/");.qqq.input(`id`type!(`body;`text)));"<form method=\"post\" action=\"/\"><input id=\"body\" type=\"text\"></input></form>"];
 	show `testspassed}
 
 test[]
