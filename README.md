@@ -1,13 +1,51 @@
 qqq.q: www toolkit for q
 ========================
 
-This is an experiment in making it really fast to develop apps in Q/Kdb+,
-a programming environment produced by (Kx Systems)[http://kx.com].
+This is a toolkit of useful functions for those creating websites with Q and Kdb+.
 
-WARNING: This software does not yet work. This is just a sketch.
+This is not a framework and you don't have to use all of it. Feel free to mix this
+with (.h)[http://code.kx.com/wiki/Doth), (.z.ph)[http://code.kx.com/wiki/Reference/dotzdotph],
+etc. 
 
-Notes/thinking/observations
----------------------------
+Included is an experimental approach to transforming Q data into an HTML tree structure. I've
+also been experimenting with transmitting the raw Q data structures to the client via 
+(.z.ws)[http://code.kx.com/wiki/Reference/dotzdotws] and (Kx's own c.js)[http://kx.com/q/c/c.js], 
+then creating DOM elements using the excellent (https://github.com/Matt-Esch/virtual-dom]. This
+approach has a lot of promise in terms of performance, expressivity, and productivity.
+
+Status
+------
+
+Handy for my personal use, but not ready for prime time. Caveat emptor.
+
+Usage
+-----
+
+As a URL parser:
+
+To extract handy data from the passed-in data to .z.ph:
+
+```
+\l qqq/qqq.q
+.z.ph:{.qqq.parsereq[x]; otherstuff[]}
+```
+
+Server-side DOM tree:
+
+```
+\l qqq/qqq.q
+.z.ph:{.qqq.divv["Welcome to my humble website!"]}
+```
+
+Copyright
+---------
+
+MIT License. (c) Copyright 2015 @tlack 
+
+OLD Notes/thinking/observations
+-------------------------------
+
+The following may be out of date:
 
 Example single pager:
 
